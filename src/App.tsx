@@ -7,9 +7,18 @@ function App() {
   const [message, setMessage] = useState('');
 
   useEffect(() => {
-    fetch('/api/v1/hello')
-      .then((res) => res.json())
-      .then(({ message }) => setMessage(message));
+    const source = new EventSource("/api/v1/hello");
+    source.onmessage = (event) => {
+      setMessage(event.data);
+      setCount((count) => count + 1); 
+    };
+    source.onerror = (event) => {
+      console.log(event);
+    };
+    return () => {
+      console.log("cleanup");
+      source.close();
+    };
   }, []);
 
   return (
